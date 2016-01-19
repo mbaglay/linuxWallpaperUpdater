@@ -3,27 +3,59 @@ import json
 import requests
 import shutil
 import os
+import time
+import datetime
 
 BING_DOMAIN = "http://www.bing.com"
 IMAGE_NAME = "SAVED_IMAGE.JPG~"
 INSTALL_WALLPAPER_COMMAND = "gsettings set org.gnome.desktop.background picture-uri file://"
+LOGGER_NAME = "WALLPAPER_LOGGER~"
+SECONDS_TO_WAIT_AFTER_EXCEPTION = 60
+STATUS_OK = 200
 
 current_dir = os.getcwd()
 PATH_TO_IMAGE = "{0}/{1}".format(current_dir, IMAGE_NAME)
+WALLPAPER_LOGGER = "{0}/{1}".format(current_dir, LOGGER_NAME)
+
+def log_text(text, modif='w'):
+    with open(WALLPAPER_LOGGER, modif) as f:
+        f.write("{0}\n".format(text))
 
 json_url = "{0}/HPImageArchive.aspx?format=js&idx=0&n=1&mkt=uk-UA".format(BING_DOMAIN)
 
-response = urllib2.urlopen(json_url)
-bing_json = response.read()
-bing_hash = json.loads(bing_json)
+log_text("JSON URL IS: {0}".format(json_url), 'w')
 
-image_url = "{0}{1}".format(BING_DOMAIN, bing_hash['images'][0]['url'])
+log_text("Time now is {0}".format(datetime.datetime.now().time()), 'a')
 
-req = requests.get(image_url, stream=True)
+try_to_reconnect = True
+while try_to_reconnect:
+    try:
+        response = urllib2.urlopen(json_url)
+        bing_json = response.read()
 
-if req.status_code == 200:
+        log_text("GOT NEXT JSON: {0}".format(bing_json), 'a')
+
+        bing_hash = json.loads(bing_json)
+
+        image_url = "{0}{1}".format(BING_DOMAIN, bing_hash['images'][0]['url'])
+
+        log_text("IMAGE URL IS: {0}".format(image_url), 'a')
+
+        req = requests.get(image_url, stream=True)
+
+        log_text("GOT NEXT response: {0}".format(req), 'a')
+    except Exception as exception:
+        log_text("GOT exception: {0}".format(exception), 'a')
+        log_text("Will retry after {0} seconds ...".format(SECONDS_TO_WAIT_AFTER_EXCEPTION), 'a')
+        time.sleep(SECONDS_TO_WAIT_AFTER_EXCEPTION)
+    else:
+        try_to_reconnect = False
+
+if req.status_code == STATUS_OK:
     with open(PATH_TO_IMAGE, 'wb') as f:
         req.raw.decode_content = True
         shutil.copyfileobj(req.raw, f)
 
-    os.system("{0}{1}".format(INSTALL_WALLPAPER_COMMAND, PATH_TO_IMAGE))
+    command = "{0}{1}".format(INSTALL_WALLPAPER_COMMAND, PATH_TO_IMAGE)
+    log_text("RUN COMMAND: {0}".format(command), 'a')
+    os.system(command)
