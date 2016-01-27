@@ -5,6 +5,7 @@ import shutil
 import os
 import time
 import datetime
+import re
 
 BING_DOMAIN = "http://www.bing.com"
 IMAGE_NAME = "SAVED_IMAGE.JPG~"
@@ -12,6 +13,10 @@ INSTALL_WALLPAPER_COMMAND = "gsettings set org.gnome.desktop.background picture-
 LOGGER_NAME = "WALLPAPER_LOGGER~"
 SECONDS_TO_WAIT_AFTER_EXCEPTION = 60
 STATUS_OK = 200
+
+DEFAULT_LOCALE = "en-US"
+LIST_OF_SOURCES_TO_GET_LOCALE = ["LC_TIME", "LC_NAME", "LC_IDENTIFICATION", "LANG"]
+LOCALE_REGEXP = "[a-zA-Z]{2}[_-][a-zA-Z]{2}"
 
 current_dir = os.getcwd()
 PATH_TO_IMAGE = "{0}/{1}".format(current_dir, IMAGE_NAME)
@@ -21,9 +26,28 @@ def log_text(text, modif='w'):
     with open(WALLPAPER_LOGGER, modif) as f:
         f.write("{0}\n".format(text))
 
-json_url = "{0}/HPImageArchive.aspx?format=js&idx=0&n=1&mkt=uk-UA".format(BING_DOMAIN)
+log_text("Updating of wallpaper is started ...", 'w')
 
-log_text("JSON URL IS: {0}".format(json_url), 'w')
+current_locale = DEFAULT_LOCALE
+
+for source_of_locale in LIST_OF_SOURCES_TO_GET_LOCALE:
+    locale = os.getenv(source_of_locale, "")
+    matches = re.findall(LOCALE_REGEXP, locale)
+    if len(matches) > 0:
+        locale = matches[0]
+
+    if locale:
+        locale = list(locale)
+        locale[2] = "-"
+
+        current_locale = "".join(locale)
+        break
+
+log_text("LOCALE IS: {0}".format(current_locale), 'a')
+
+json_url = "{0}/HPImageArchive.aspx?format=js&idx=0&n=1&mkt={locale}".format(BING_DOMAIN, locale = current_locale)
+
+log_text("JSON URL IS: {0}".format(json_url), 'a')
 
 log_text("Time now is {0}".format(datetime.datetime.now().time()), 'a')
 
