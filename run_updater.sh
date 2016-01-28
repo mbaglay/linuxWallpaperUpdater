@@ -13,4 +13,4 @@ date >> $LOGGER_FILE
 
 python $DIRECTORY_TO_WORK/wallpaper_updater.py & >> $LOGGER_FILE
 
-echo "bash $FULL_NAME" | at now + 1 hour
+echo "bash $FULL_NAME" | at now + 1 hour >>$LOGGER_FILE 2>&1
