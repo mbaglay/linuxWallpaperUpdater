@@ -6,11 +6,14 @@ import os
 import time
 import datetime
 import re
+import subprocess
 
 BING_DOMAIN = "http://www.bing.com"
 IMAGE_NAME = "SAVED_IMAGE.JPG~"
-INSTALL_WALLPAPER_COMMAND = "gsettings set org.gnome.desktop.background picture-uri file://"
 LOGGER_NAME = "WALLPAPER_LOGGER~"
+
+INSTALL_WALLPAPER_COMMAND = ["gsettings", "set", "org.gnome.desktop.background", "picture-uri"]
+
 SECONDS_TO_WAIT_AFTER_EXCEPTION = 60
 STATUS_OK = 200
 
@@ -80,6 +83,14 @@ if req.status_code == STATUS_OK:
         req.raw.decode_content = True
         shutil.copyfileobj(req.raw, f)
 
-    command = "{0}{1}".format(INSTALL_WALLPAPER_COMMAND, PATH_TO_IMAGE)
+    result_command = INSTALL_WALLPAPER_COMMAND + ["file://{0}".format(PATH_TO_IMAGE)]
+
+    command = " ".join(result_command)
     log_text("RUN COMMAND: {0}".format(command), 'a')
-    os.system(command)
+
+    p = subprocess.Popen(result_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    out, errors = p.communicate()
+    if out:
+        log_text("    RESULT: {0}".format(out), 'a')
+    if errors:
+        log_text("    ERRORS: {0}".format(errors), 'a')
