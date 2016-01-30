@@ -15,6 +15,14 @@ date >> $LOGGER_FILE
 
 python $DIRECTORY_TO_WORK/wallpaper_updater.py & >> $LOGGER_FILE
 
+if [ -z "$(which at)" ]
+then
+    echo "There will not be rerunnings as 'at' command is not installed" >> $LOGGER_FILE
+    echo "Please, install it if you want this tool to periodically run" >> $LOGGER_FILE
+
+    exit 0
+fi
+
 if [ -z "$(at -l -q $QUEUE_TO_RUN_AT)" ]
 then
     echo "Queue is empty" >> $LOGGER_FILE
