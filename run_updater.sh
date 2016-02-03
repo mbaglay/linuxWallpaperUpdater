@@ -5,15 +5,23 @@ QUEUE_TO_RUN_AT="W"
 DIRECTORY_TO_WORK="$HOME/.wallpaper_updater"
 LOGGER_FILE="RUNNER_LOG"
 
+export LINES_TO_SAVE_IN_LOGS=10
+export IMAGE_NAME="SAVED_IMAGE.JPG"
+export WALLPAPER_LOGGER="WALLPAPER_LOGGER"
+
 SCRIPT_NAME=$(basename $0)
 FULL_NAME=$DIRECTORY_TO_WORK/$SCRIPT_NAME
 
 cd $DIRECTORY_TO_WORK
 
-pwd > $LOGGER_FILE
+echo "" >> $LOGGER_FILE
+echo "====================" >> $LOGGER_FILE
+pwd >> $LOGGER_FILE
 date >> $LOGGER_FILE
 
 python $DIRECTORY_TO_WORK/wallpaper_updater.py & >> $LOGGER_FILE
+
+bash $DIRECTORY_TO_WORK/log_cleaner.sh $LOGGER_FILE $WALLPAPPER_LOGGER
 
 if [ -z "$(which at)" ]
 then
