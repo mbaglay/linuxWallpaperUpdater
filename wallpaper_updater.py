@@ -7,10 +7,12 @@ import time
 import datetime
 import re
 import subprocess
+import sys
 
 BING_DOMAIN = "http://www.bing.com"
-IMAGE_NAME = os.getenv("IMAGE_NAME", "SAVED_IMAGE.JPG_From_python")
+IMAGE_NAME = os.getenv("IMAGE_NAME", "SAVED_IMAGE.JPG")
 LOGGER_NAME = os.getenv("WALLPAPER_LOGGER", "WALLPAPER_LOGGER")
+FILE_TO_SAVE_WALLPAPER_NAME = os.getenv("FILE_TO_SAVE_WALLPAPER_NAME", "IMAGE_NAME")
 
 INSTALL_WALLPAPER_COMMAND = ["gsettings", "set", "org.gnome.desktop.background", "picture-uri"]
 
@@ -53,7 +55,7 @@ json_url = "{0}/HPImageArchive.aspx?format=js&idx=0&n=1&mkt={locale}".format(BIN
 
 log_text("JSON URL IS: {0}".format(json_url))
 
-log_text("Time now is {0}".format(datetime.datetime.now().time()))
+log_text("TIME NOW IS {0}".format(datetime.datetime.now().time()))
 
 try_to_reconnect = True
 while try_to_reconnect:
@@ -67,31 +69,50 @@ while try_to_reconnect:
 
         image_url = "{0}{1}".format(BING_DOMAIN, bing_hash['images'][0]['url'])
 
+        image_name = image_url.split('/')[-1]
+
+        log_text("IMAGE NAME IS: {0}".format(image_name))
+
+        if os.path.exists(FILE_TO_SAVE_WALLPAPER_NAME):
+            wallpaper_file_with_name = open(FILE_TO_SAVE_WALLPAPER_NAME, 'r')
+            current_wallpaper_name = wallpaper_file_with_name.read()
+            log_text("CURRENT WALLPAPER NAME IS: {0}".format(current_wallpaper_name))
+            if image_name == current_wallpaper_name:
+                log_text("CURRENT WALLPAPER IS THE LAST ONE!")
+                log_text("WALLPAPER WILL NOT BE UPDATED. IT IS UNNECESSARY.")
+                sys.exit(0)
+
         log_text("IMAGE URL IS: {0}".format(image_url))
 
         req = requests.get(image_url, stream=True)
 
-        log_text("GOT NEXT response: {0}".format(req))
+        log_text("GOT NEXT RESPONSE: {0}".format(req))
+
+        if req.status_code == STATUS_OK:
+            with open(PATH_TO_IMAGE, 'wb') as f:
+                req.raw.decode_content = True
+                shutil.copyfileobj(req.raw, f)
+
+            result_command = INSTALL_WALLPAPER_COMMAND + ["file://{0}".format(PATH_TO_IMAGE)]
+
+            command = " ".join(result_command)
+            log_text("RUN COMMAND: {0}".format(command))
+
+            p = subprocess.Popen(result_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            out, errors = p.communicate()
+            if out:
+                log_text("    RESULT: {0}".format(out))
+            if errors:
+                log_text("    ERRORS: {0}".format(errors))
+            else:
+                log_text("WROTE {0} TO {1}".format(image_name, FILE_TO_SAVE_WALLPAPER_NAME))
+                with open(FILE_TO_SAVE_WALLPAPER_NAME, 'w') as f:
+                    f.write("{0}".format(image_name))
+
     except Exception as exception:
-        log_text("GOT exception: {0}".format(exception))
+        log_text("GOT EXCEPTION: {0}".format(exception))
         log_text("Will retry after {0} seconds ...".format(SECONDS_TO_WAIT_AFTER_EXCEPTION))
         time.sleep(SECONDS_TO_WAIT_AFTER_EXCEPTION)
     else:
         try_to_reconnect = False
 
-if req.status_code == STATUS_OK:
-    with open(PATH_TO_IMAGE, 'wb') as f:
-        req.raw.decode_content = True
-        shutil.copyfileobj(req.raw, f)
-
-    result_command = INSTALL_WALLPAPER_COMMAND + ["file://{0}".format(PATH_TO_IMAGE)]
-
-    command = " ".join(result_command)
-    log_text("RUN COMMAND: {0}".format(command))
-
-    p = subprocess.Popen(result_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    out, errors = p.communicate()
-    if out:
-        log_text("    RESULT: {0}".format(out))
-    if errors:
-        log_text("    ERRORS: {0}".format(errors))
