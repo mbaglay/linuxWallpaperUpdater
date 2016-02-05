@@ -1,13 +1,13 @@
-import urllib2
+import datetime
 import json
+import os
+import re
 import requests
 import shutil
-import os
-import time
-import datetime
-import re
 import subprocess
 import sys
+import time
+import urllib2
 
 BING_DOMAIN = "http://www.bing.com"
 IMAGE_NAME = os.getenv("IMAGE_NAME", "SAVED_IMAGE.JPG")
@@ -55,7 +55,7 @@ json_url = "{0}/HPImageArchive.aspx?format=js&idx=0&n=1&mkt={locale}".format(BIN
 
 log_text("JSON URL IS: {0}".format(json_url))
 
-log_text("TIME NOW IS {0}".format(datetime.datetime.now().time()))
+log_text("TIME NOW IS {0}".format(datetime.datetime.now()))
 
 try_to_reconnect = True
 while try_to_reconnect:
