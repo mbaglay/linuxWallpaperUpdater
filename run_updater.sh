@@ -9,7 +9,7 @@ IMAGE_NAME="SAVED_IMAGE.JPG"
 FILE_TO_SAVE_WALLPAPER_NAME="IMAGE_NAME"
 QUEUE_TO_RUN_AT="W"
 DIRECTORY_TO_WORK="$HOME/.wallpaper_updater"
-TURNED_OFF_FILE="SCRIPT_IS_TURNED_OFF"
+SCRIPT_IS_TURNED_ON=true
 RETRIES_COUNT_IF_INTERNET_PROBLEM=30
 
 source $CONFIG_FILE
@@ -25,30 +25,12 @@ FULL_NAME=$DIRECTORY_TO_WORK/$SCRIPT_NAME
 
 cd $DIRECTORY_TO_WORK
 
-while [[ $# > 0 ]]
-do
-    key="$1"
-
-    case $key in
-        --switch-on)
-            rm -f $TURNED_OFF_FILE
-        ;;
-        --switch-off)
-            touch $TURNED_OFF_FILE
-        ;;
-        *)
-            # Unknown option
-        ;;
-    esac
-    shift
-done
-
 echo "" >> $LOGGER_FILE
 echo "====================" >> $LOGGER_FILE
 pwd >> $LOGGER_FILE
 date >> $LOGGER_FILE
 
-if [ -f $TURNED_OFF_FILE ]; then
+if [ $SCRIPT_IS_TURNED_ON = false ]; then
     echo "Script is turned off" >> $LOGGER_FILE
     exit 0
 fi
