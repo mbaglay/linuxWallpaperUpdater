@@ -13,6 +13,7 @@ BING_DOMAIN = "http://www.bing.com"
 IMAGE_NAME = os.getenv("IMAGE_NAME", "SAVED_IMAGE.JPG")
 LOGGER_NAME = os.getenv("WALLPAPER_LOGGER", "WALLPAPER_LOGGER")
 FILE_TO_SAVE_WALLPAPER_NAME = os.getenv("FILE_TO_SAVE_WALLPAPER_NAME", "IMAGE_NAME")
+RETRIES_COUNT_IF_INTERNET_PROBLEM = int(os.getenv("RETRIES_COUNT_IF_INTERNET_PROBLEM", 10))
 
 INSTALL_WALLPAPER_COMMAND = ["gsettings", "set", "org.gnome.desktop.background", "picture-uri"]
 
@@ -57,6 +58,7 @@ log_text("JSON URL IS: {0}".format(json_url))
 
 log_text("TIME NOW IS {0}".format(datetime.datetime.now()))
 
+retries_count = 0
 try_to_reconnect = True
 while try_to_reconnect:
     try:
@@ -111,8 +113,14 @@ while try_to_reconnect:
 
     except Exception as exception:
         log_text("GOT EXCEPTION: {0}".format(exception))
-        log_text("Will retry after {0} seconds ...".format(SECONDS_TO_WAIT_AFTER_EXCEPTION))
+        log_text("TIME NOW IS {0}".format(datetime.datetime.now()))
+        log_text("ALREADY TRIED TO RECONNECT {0} TIMES".format(retries_count))
+        log_text("WILL RETRY AFTER {0} SECONDS ...".format(SECONDS_TO_WAIT_AFTER_EXCEPTION))
+
+        if retries_count >= RETRIES_COUNT_IF_INTERNET_PROBLEM:
+            try_to_reconnect = False
+
+        retries_count = retries_count + 1
         time.sleep(SECONDS_TO_WAIT_AFTER_EXCEPTION)
     else:
         try_to_reconnect = False
-
