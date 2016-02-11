@@ -14,6 +14,8 @@ IMAGE_NAME = os.getenv("IMAGE_NAME", "SAVED_IMAGE.JPG")
 LOGGER_NAME = os.getenv("WALLPAPER_LOGGER", "WALLPAPER_LOGGER")
 FILE_TO_SAVE_WALLPAPER_NAME = os.getenv("FILE_TO_SAVE_WALLPAPER_NAME", "IMAGE_NAME")
 RETRIES_COUNT_IF_INTERNET_PROBLEM = int(os.getenv("RETRIES_COUNT_IF_INTERNET_PROBLEM", 10))
+SAVE_CURRENT_WALLPAPER_LOCALLY = json.loads(os.getenv("SAVE_CURRENT_WALLPAPER_LOCALLY", "True"))
+DIRECTORY_TO_SAVE_WALLPAPER = os.getenv("DIRECTORY_TO_SAVE_WALLPAPER", "")
 
 INSTALL_WALLPAPER_COMMAND = ["gsettings", "set", "org.gnome.desktop.background", "picture-uri"]
 
@@ -94,6 +96,16 @@ while try_to_reconnect:
             with open(PATH_TO_IMAGE, 'wb') as f:
                 req.raw.decode_content = True
                 shutil.copyfileobj(req.raw, f)
+
+            image_to_save = "{0}/{1}_{2}".format(DIRECTORY_TO_SAVE_WALLPAPER, datetime.datetime.now().date(), image_name)
+
+            if not os.path.exists(DIRECTORY_TO_SAVE_WALLPAPER):
+                os.makedirs(DIRECTORY_TO_SAVE_WALLPAPER)
+                log_text("CREATED DIRECTORY {0} AS IT DID NOT EXIST".format(DIRECTORY_TO_SAVE_WALLPAPER))
+
+            if not os.path.exists(image_to_save):
+                shutil.copy(PATH_TO_IMAGE, image_to_save)
+                log_text("SAVED IMAGE {0}".format(image_to_save))
 
             result_command = INSTALL_WALLPAPER_COMMAND + ["file://{0}".format(PATH_TO_IMAGE)]
 
