@@ -10,6 +10,13 @@ do
     key="$1"
 
     case $key in
+        -h|--help)
+            echo ""
+            echo "Tool to daily update wallpaper from Bing Homepage Gallery"
+            echo "  Run this file to install the tool to $DIRECTORY_TO_INSTALL"
+            echo "  Use --do-not-run parameter if you do not want the tool to run just after installation"
+            exit 0
+        ;;
         --do-not-run)
             RUN_AFTER_INSTALL=false
         ;;

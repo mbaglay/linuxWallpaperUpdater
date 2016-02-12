@@ -10,7 +10,7 @@ DIRECTORY_TO_SAVE_WALLPAPER="$HOME/Pictures/Wallpapers"
 QUEUE_TO_RUN_AT="W"
 DIRECTORY_TO_WORK="$HOME/.wallpaper_updater"
 SCRIPT_IS_TURNED_ON=true
-RETRIES_COUNT_IF_INTERNET_PROBLEM=30
+RETRIES_COUNT_IF_INTERNET_PROBLEM=10
 
 CONFIG_FILE="$DIRECTORY_TO_WORK/wallpaper_updater.cfg"
 
@@ -45,7 +45,7 @@ bash $DIRECTORY_TO_WORK/log_cleaner.sh $LOGGER_FILE $WALLPAPER_LOGGER
 
 if [ -z "$(which at)" ]
 then
-    echo "There will not be rerunnings as 'at' command is not installed" >> $LOGGER_FILE
+    echo "There will not be reruns as 'at' command is not installed" >> $LOGGER_FILE
     echo "Please, install it if you want this tool to periodically run" >> $LOGGER_FILE
 
     exit 0

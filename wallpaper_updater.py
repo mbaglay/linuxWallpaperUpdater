@@ -82,7 +82,7 @@ while try_to_reconnect:
             current_wallpaper_name = wallpaper_file_with_name.read()
             log_text("CURRENT WALLPAPER NAME IS: {0}".format(current_wallpaper_name))
             if image_name == current_wallpaper_name:
-                log_text("CURRENT WALLPAPER IS THE LAST ONE!")
+                log_text("CURRENT WALLPAPER IS THE FRESH ONE!")
                 log_text("WALLPAPER WILL NOT BE UPDATED. IT IS UNNECESSARY.")
                 sys.exit(0)
 
@@ -124,6 +124,7 @@ while try_to_reconnect:
                     f.write("{0}".format(image_name))
 
     except Exception as exception:
+        log_text("-----------")
         log_text("GOT EXCEPTION: {0}".format(exception))
         log_text("TIME NOW IS {0}".format(datetime.datetime.now()))
         log_text("ALREADY TRIED TO RECONNECT {0} TIMES".format(retries_count))
