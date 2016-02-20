@@ -97,16 +97,6 @@ while try_to_reconnect:
                 req.raw.decode_content = True
                 shutil.copyfileobj(req.raw, f)
 
-            image_to_save = "{0}/{1}_{2}".format(DIRECTORY_TO_SAVE_WALLPAPER, datetime.datetime.now().date(), image_name)
-
-            if not os.path.exists(DIRECTORY_TO_SAVE_WALLPAPER):
-                os.makedirs(DIRECTORY_TO_SAVE_WALLPAPER)
-                log_text("CREATED DIRECTORY {0} AS IT DID NOT EXIST".format(DIRECTORY_TO_SAVE_WALLPAPER))
-
-            if not os.path.exists(image_to_save):
-                shutil.copy(PATH_TO_IMAGE, image_to_save)
-                log_text("SAVED IMAGE {0}".format(image_to_save))
-
             result_command = INSTALL_WALLPAPER_COMMAND + ["file://{0}".format(PATH_TO_IMAGE)]
 
             command = " ".join(result_command)
@@ -119,6 +109,16 @@ while try_to_reconnect:
             if errors:
                 log_text("    ERRORS: {0}".format(errors))
             else:
+                image_to_save = "{0}/{1}_{2}".format(DIRECTORY_TO_SAVE_WALLPAPER, datetime.datetime.now().date(), image_name)
+
+                if not os.path.exists(DIRECTORY_TO_SAVE_WALLPAPER):
+                    os.makedirs(DIRECTORY_TO_SAVE_WALLPAPER)
+                    log_text("CREATED DIRECTORY {0} AS IT DID NOT EXIST".format(DIRECTORY_TO_SAVE_WALLPAPER))
+
+                if not os.path.exists(image_to_save):
+                    shutil.copy(PATH_TO_IMAGE, image_to_save)
+                    log_text("SAVED IMAGE {0}".format(image_to_save))
+
                 log_text("WROTE {0} TO {1}".format(image_name, FILE_TO_SAVE_WALLPAPER_NAME))
                 with open(FILE_TO_SAVE_WALLPAPER_NAME, 'w') as f:
                     f.write("{0}".format(image_name))
