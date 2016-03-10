@@ -1,3 +1,4 @@
+import codecs
 import datetime
 import json
 import os
@@ -16,6 +17,7 @@ FILE_TO_SAVE_WALLPAPER_NAME = os.getenv("FILE_TO_SAVE_WALLPAPER_NAME", "IMAGE_NA
 RETRIES_COUNT_IF_INTERNET_PROBLEM = int(os.getenv("RETRIES_COUNT_IF_INTERNET_PROBLEM", 10))
 SAVE_CURRENT_WALLPAPER_LOCALLY = json.loads(os.getenv("SAVE_CURRENT_WALLPAPER_LOCALLY", "True"))
 DIRECTORY_TO_SAVE_WALLPAPER = os.getenv("DIRECTORY_TO_SAVE_WALLPAPER", "")
+COPYRIGHT_FILE = os.getenv("COPYRIGHT_FILE", "COPYRIGHT")
 
 INSTALL_WALLPAPER_COMMAND = ["gsettings", "set", "org.gnome.desktop.background", "picture-uri"]
 
@@ -70,6 +72,12 @@ while try_to_reconnect:
         log_text("GOT NEXT JSON: {0}".format(bing_json))
 
         bing_hash = json.loads(bing_json)
+
+        copyright_info = bing_hash['images'][0]['copyright']
+
+        with codecs.open(COPYRIGHT_FILE, encoding='utf-8', mode='w') as f:
+            f.write(u"{0}".format(copyright_info))
+            log_text("WROTE COPYRIGHT INFO TO {0}".format(COPYRIGHT_FILE))
 
         image_url = "{0}{1}".format(BING_DOMAIN, bing_hash['images'][0]['url'])
 

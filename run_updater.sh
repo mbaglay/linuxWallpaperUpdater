@@ -7,6 +7,10 @@ IMAGE_NAME="SAVED_IMAGE.JPG"
 FILE_TO_SAVE_WALLPAPER_NAME="IMAGE_NAME"
 SAVE_CURRENT_WALLPAPER_LOCALLY=true
 DIRECTORY_TO_SAVE_WALLPAPER="$HOME/Pictures/Wallpapers"
+COPYRIGHT_FILE="COPYRIGHT"
+SCRIPT_HAS_TO_SHOW_NOTOFICATIONS=true
+PERIOD_OF_NOTIFICATIONS=10
+NOTIFICATION_SUMMARY="Wallpaper copyright"
 QUEUE_TO_RUN_AT="W"
 DIRECTORY_TO_WORK="$HOME/.wallpaper_updater"
 SCRIPT_IS_TURNED_ON=true
@@ -16,6 +20,7 @@ CONFIG_FILE="$DIRECTORY_TO_WORK/wallpaper_updater.cfg"
 
 source $CONFIG_FILE
 
+export CONFIG_FILE
 export LINES_TO_SAVE_IN_LOGS
 export IMAGE_NAME
 export WALLPAPER_LOGGER
@@ -36,12 +41,22 @@ date >> $LOGGER_FILE
 
 if [ $SCRIPT_IS_TURNED_ON = false ]; then
     echo "Script is turned off" >> $LOGGER_FILE
+
+    kill `ps aux | grep data_notifier.sh | grep -v grep | awk '{print $2}'`
     exit 0
 fi
 
 python $DIRECTORY_TO_WORK/wallpaper_updater.py & >> $LOGGER_FILE
 
 bash $DIRECTORY_TO_WORK/log_cleaner.sh $LOGGER_FILE $WALLPAPER_LOGGER
+
+if [ -z "$(ps aux | grep data_notifier.sh | grep -v grep | awk '{print $2}')" ]
+then
+    bash $DIRECTORY_TO_WORK/data_notifier.sh &
+    echo "Started notifier with PID $!" >> $LOGGER_FILE
+else
+    echo "Notifier is already started with PID $(ps aux | grep data_notifier.sh | grep -v grep | awk '{print $2}')"
+fi
 
 if [ -z "$(which at)" ]
 then
